@@ -27,14 +27,20 @@ def generate_enc_key(salt: object, password: object):
     return derived_key
 
 
-def encrypt_object(file: object, enc_key):
-
+def encrypt_object(file, enc_key, tempdir):
     box = nacl.secret.SecretBox(enc_key)
-    encrypted = box.encrypt(file)
-    return encrypted
+    output_file = tempdir + encrypt_file_name(file, enc_key)
+
+    with open(output_file, 'wb') as fout:
+        with open(file, 'rb') as fin:
+            for chunk, index in read_in_chunks(fin, chunk_size=16 * 1024 - 40):
+                enc = box.encrypt(chunk, chunk_nonce(nonce, index))
+                fout.write(enc)
+
+    return output_file
 
 
-def encode_base64(file: object):
+def encode_base64(file):
     encoded = base64.b64encode(file).decode("ascii")
     return encoded
 
@@ -49,3 +55,12 @@ def read_in_chunks(file_object, chunk_size=32 * 1024):
             break
         yield (data, index)
         index += 1
+
+
+def encrypt_file_name(file_name, enc_key):
+    box = nacl.secret.SecretBox(enc_key)
+
+    enc_name = box.encrypt(file_name)
+    base64_name = encode_base64(enc_name)
+
+    return base64_name
