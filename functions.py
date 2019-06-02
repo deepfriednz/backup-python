@@ -30,6 +30,7 @@ def generate_enc_key(salt: object, password: object):
 def encrypt_object(file, enc_key, tempdir):
     box = nacl.secret.SecretBox(enc_key)
     output_file = tempdir + encrypt_file_name(file, enc_key)
+    nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
 
     with open(output_file, 'wb') as fout:
         with open(file, 'rb') as fin:
@@ -41,7 +42,7 @@ def encrypt_object(file, enc_key, tempdir):
 
 
 def encode_base64(file):
-    encoded = base64.b64encode(file).decode("ascii")
+    encoded = base64.urlsafe_b64encode(file).decode("ascii")
     return encoded
 
 
@@ -64,3 +65,8 @@ def encrypt_file_name(file_name, enc_key):
     base64_name = encode_base64(enc_name)
 
     return base64_name
+
+
+def chunk_nonce(base, index):
+    size = nacl.secret.SecretBox.NONCE_SIZE
+    return int.to_bytes(int.from_bytes(base, byteorder='big') + index, length=size, byteorder='big')

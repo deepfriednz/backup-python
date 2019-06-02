@@ -16,7 +16,7 @@ def main() -> object:
     enc_key = functions.generate_enc_key(SALT, PASSWORD)
 
     secret_msg = b"This is gonna be good..."
-    encrypted_object = functions.encrypt_object(secret_msg, enc_key)
+    # encrypted_object = functions.encrypt_object(secret_msg, enc_key, TMP_DIR)
 
     files_to_backup = []
     encrypted_files = []
